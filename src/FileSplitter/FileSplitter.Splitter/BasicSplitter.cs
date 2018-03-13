@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace FileSplitter.Splitter
@@ -37,6 +38,10 @@ namespace FileSplitter.Splitter
         {
             var text = Encoding.UTF8.GetString(data);
             var json = JsonConvert.DeserializeObject<FileDescriptor>(text);
+
+            var directory = Directory.CreateDirectory(@".\Files\" + json.Name);
+            var path = Path.Combine(directory.FullName, json.Name);
+            File.WriteAllText(path, text);
 
             Console.WriteLine(text);
 
