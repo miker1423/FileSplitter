@@ -7,20 +7,20 @@ namespace FileSplitter.Server
 {
     class Connection
     {
-        private Socket sock;
+        private Socket _socket;
         private Encoding encoding = Encoding.UTF8;
         private byte[] dataRcvBuf;
 
-        public Connection(Socket s)
+        public Connection(Socket socket)
         {
-            this.sock = s;
+            _socket = socket;
             dataRcvBuf = new byte[254];
-            this.BeginReceive();
+            BeginReceive();
         }
 
         private void BeginReceive()
         {
-            sock.BeginReceive(
+            _socket.BeginReceive(
                     dataRcvBuf, 0,
                     dataRcvBuf.Length,
                     SocketFlags.None,
@@ -30,16 +30,18 @@ namespace FileSplitter.Server
         
         protected void OnBytesReceived(IAsyncResult result)
         {
-            int nBytesRec = sock.EndReceive(result);
+            int nBytesRec = _socket.EndReceive(result);
             if (nBytesRec <= 0)
             {
-                sock.Close();
+                _socket.Close();
                 return;
             }
             string strReceived = encoding.GetString(
                 dataRcvBuf, 0, nBytesRec);
 
-            sock.BeginReceive(
+            Console.WriteLine(strReceived);
+
+            _socket.BeginReceive(
                 dataRcvBuf, 0,
                 dataRcvBuf.Length,
                 SocketFlags.None,
