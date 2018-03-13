@@ -1,6 +1,4 @@
 ﻿using System;
-using Raft;
-using Raft.Transport;
 using System.Net;
 
 using FileSplitter.Server;
@@ -10,10 +8,10 @@ namespace FileSplitter.Runner
 {
     class Program
     {
-        private static RaftServer server;
+        private static TcpServer server;
         static void Main(string[] args)
         {
-            server = new RaftServer(File.ReadAllText(@".\config.txt"), @".\Temp\");
+            server = new TcpServer();
 
             Run();
         }

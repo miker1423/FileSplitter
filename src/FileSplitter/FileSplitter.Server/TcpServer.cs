@@ -1,34 +1,37 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
-using Raft;
-using Raft.Transport;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 
 using FileSplitter.Splitter;
+using System.Net.Sockets;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace FileSplitter.Server
 {
-    public class RaftServer
+    public class TcpServer
     {
+        private Socket socket = new Socket(IPAddress.Any.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
         private BasicSplitter splitter = new BasicSplitter();
-        private TcpRaftNode raftNode;
+        private ConcurrentBag<NetworkStream> Clients = new ConcurrentBag<NetworkStream>();
         private int counter = 0;
 
-        public RaftServer(
-            string configPath,
-            string path)
+        public TcpServer()
         {
-            if(string.IsNullOrEmpty(configPath) || string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentNullException("One or more parameter is null");
-            }
+            socket.Bind(new IPEndPoint(IPAddress.Any, 25000));
+            socket.Listen(5);
+            socket.BeginAccept(OnConnectRequest, socket);
+        }
 
-            raftNode = TcpRaftNode.GetFromConfig(1, configPath, path, 4250, new Logger(), splitter.WriteFile);
-
-            raftNode.Start();
+        private void OnConnectRequest(IAsyncResult result)
+        {
+            var clientSocket = result.AsyncState as Socket;
+            var connection = new Connection(socket.EndAccept(result));
+            socket.BeginAccept(OnConnectRequest, socket);
         }
 
         public void GetFile(string fileName)
@@ -65,24 +68,6 @@ namespace FileSplitter.Server
 
         public void Send(byte[] crap)
         {
-            var result = raftNode?.AddLogEntry(crap);
-            Console.WriteLine(result.AddResult.ToString());
-        }
-    }
-
-    class Logger : IWarningLog
-    {
-        private StringBuilder stringBuilder = new StringBuilder();
-        public void Log(WarningLogEntry logEntry)
-        {
-            stringBuilder.Append($"{logEntry.LogType}: {logEntry.Description} at {logEntry.DateTime}");
-            if (logEntry.Exception != null)
-            {
-                stringBuilder.Append($" with exception: {logEntry.Exception}");
-            }
-            
-            Console.WriteLine(stringBuilder.ToString());
-            stringBuilder.Clear();
         }
     }
 }

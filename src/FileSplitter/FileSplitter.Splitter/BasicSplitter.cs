@@ -60,7 +60,8 @@ namespace FileSplitter.Splitter
                 var files = JsonConvert.DeserializeObject<string[]>(text);
                 var orderedFile = files
                     .Select(json => JsonConvert.DeserializeObject<FileDescriptor>(json))
-                    .OrderByDescending(file => file.Part);
+                    .OrderByDescending(file => file.Part)
+                    .ToList();
 
                 var content = new List<byte>();
                 foreach (var slice in orderedFile.Select(file => file.Content))
