@@ -1,21 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
+using Newtonsoft.Json;
 
 namespace FileSplitter.Splitter
 {
     public class BasicSplitter
     {
-        public IEnumerable<byte[]> Split(ReadOnlySpan<byte> data, int slices)
+        public IEnumerable<IEnumerable<byte>> Split(byte[] data, int slices)
         {
-            var spans = new List<byte[]>();
-            
-            return spans;
+            var partitions = new List<byte>[slices];
+            var maxSize = (int)Math.Ceiling(data.Length / (double)slices);
+            int k = 0;
+
+            for (int i = 0; i < partitions.Length; i++)
+            {
+                partitions[i] = new List<byte>();
+                for (int j = k; j < k + maxSize; j++)
+                {
+                    if (j >= data.Length)
+                    {
+                        break;
+                    }
+
+                    partitions[i].Add(data[j]);
+                }
+
+                k += maxSize;
+            }
+
+            return partitions;
         }
 
         public bool WriteFile(string entityName, ulong index, byte[] data)
         {
-            Console.WriteLine($"{entityName}: {index} -> {Encoding.UTF8.GetString(data)}");
+            var text = Encoding.UTF8.GetString(data);
+            var json = JsonConvert.DeserializeObject<FileDescriptor>(text);
+
+            Console.WriteLine(text);
+
             return true;
         }
     }

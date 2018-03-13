@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Raft;
 using Raft.Transport;
 using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
+
 using FileSplitter.Splitter;
 
 namespace FileSplitter.Server
@@ -12,6 +15,7 @@ namespace FileSplitter.Server
     {
         private BasicSplitter splitter = new BasicSplitter();
         private TcpRaftNode raftNode;
+        private int counter = 0;
 
         public RaftServer(
             string configPath,
@@ -29,23 +33,34 @@ namespace FileSplitter.Server
 
         public bool SendFile(string path)
         {
+            var fileName = Path.GetFileNameWithoutExtension(path);
+            var fileExtension = Path.GetExtension(path);
             var data = File.ReadAllBytes(path);
-            var splitted = splitter.Split(data.AsSpan(), 3);
+            var splitted = splitter.Split(data, 3);
 
             foreach (var span in splitted)
             {
-                var result = Send(span);
+                var fileDescriptor = new FileDescriptor()
+                {
+                    Content = span.ToArray(),
+                    Extension = fileExtension,
+                    Name = fileName,
+                    Part = counter
+                };
+                var bytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(fileDescriptor));
+                Send(bytes);
+
+                counter++;
             }
 
-            throw new NotImplementedException();
+            counter = 0;
+            return true;
         }
 
-        public AddLogEntryResult Send(byte[] crap)
+        public void Send(byte[] crap)
         {
             var result = raftNode?.AddLogEntry(crap);
             Console.WriteLine(result.AddResult.ToString());
-
-            return result;
         }
     }
 

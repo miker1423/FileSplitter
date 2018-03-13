@@ -1,5 +1,6 @@
 ﻿//GlobalConfig
-EndPoint: 0.0.0.0,4250
+EndPoint: 192.168.1.65,4250
+EndPoint: 192.168.1.66,4250
 
 //EOF GlobalConfig
 
