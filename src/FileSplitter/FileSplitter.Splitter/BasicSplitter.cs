@@ -40,7 +40,7 @@ namespace FileSplitter.Splitter
             var json = JsonConvert.DeserializeObject<FileDescriptor>(text);
 
             var directory = Directory.CreateDirectory(@".\Files\" + json.Name);
-            var path = Path.Combine(directory.FullName, json.Name + json.Extension);
+            var path = Path.Combine(directory.FullName, json.Name + ".json");
             File.WriteAllText(path, text);
 
             Console.WriteLine(text);
