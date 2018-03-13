@@ -34,7 +34,7 @@ namespace FileSplitter.Runner
                 }
                 else if (line == "get")
                 {
-
+                    GetFile();
                 }
                 else
                 {
@@ -43,13 +43,18 @@ namespace FileSplitter.Runner
             }
         }
 
+        static void GetFile()
+        {
+            Console.WriteLine("Write the file name");
+            var name = Console.ReadLine();
+            server.GetFile(name);
+        }
+
         static void SendFile()
         {
             Console.WriteLine("Write path to file");
             var path = Console.ReadLine();
-            var result = server.SendFile(path);
-            var message = result ? "Success" : "Failed";
-            Console.WriteLine(message);
+            server.SendFile(path);
         }
 
         static void PrintMenu()

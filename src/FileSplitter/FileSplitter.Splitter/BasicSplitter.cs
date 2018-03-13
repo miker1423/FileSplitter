@@ -34,16 +34,42 @@ namespace FileSplitter.Splitter
             return partitions;
         }
 
+        public string[] GetFile(string name)
+        {
+            var directoryPath = Path.Combine(@".\Files\", name);
+            var directory = Directory.GetFiles(directoryPath);
+            var files = directory.Select(path => File.ReadAllText(path));
+            return files.ToArray();
+        }
+
         public bool WriteFile(string entityName, ulong index, byte[] data)
         {
             var text = Encoding.UTF8.GetString(data);
-            var json = JsonConvert.DeserializeObject<FileDescriptor>(text);
+            try
+            {
+                var json = JsonConvert.DeserializeObject<FileDescriptor>(text);
 
-            var directory = Directory.CreateDirectory(@".\Files\" + json.Name);
-            var path = Path.Combine(directory.FullName, $"{json.Name}-{json.Part}.json");
-            File.WriteAllText(path, text);
+                var directory = Directory.CreateDirectory(@".\Files\" + json.Name);
+                var path = Path.Combine(directory.FullName, $"{json.Name}-{json.Part}.json");
+                File.WriteAllText(path, text);
 
-            Console.WriteLine(text);
+                Console.WriteLine(text);
+            }
+            catch (Exception)
+            {
+                var files = JsonConvert.DeserializeObject<string[]>(text);
+                var orderedFile = files
+                    .Select(json => JsonConvert.DeserializeObject<FileDescriptor>(json))
+                    .OrderByDescending(file => file.Part);
+
+                var content = new List<byte>();
+                foreach (var slice in orderedFile.Select(file => file.Content))
+                {
+                    content.AddRange(slice);
+                }
+
+                Console.WriteLine(Encoding.UTF8.GetString(content.ToArray()));
+            }
 
             return true;
         }

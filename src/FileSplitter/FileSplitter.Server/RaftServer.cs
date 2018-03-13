@@ -31,7 +31,14 @@ namespace FileSplitter.Server
             raftNode.Start();
         }
 
-        public bool SendFile(string path)
+        public void GetFile(string fileName)
+        {
+            var files = splitter.GetFile(fileName);
+            var json = JsonConvert.SerializeObject(files);
+            Send(Encoding.UTF8.GetBytes(json));
+        }
+
+        public void SendFile(string path)
         {
             var fileName = Path.GetFileNameWithoutExtension(path);
             var fileExtension = Path.GetExtension(path);
@@ -54,7 +61,6 @@ namespace FileSplitter.Server
             }
 
             counter = 0;
-            return true;
         }
 
         public void Send(byte[] crap)
