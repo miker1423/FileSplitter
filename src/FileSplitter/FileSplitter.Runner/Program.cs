@@ -4,6 +4,7 @@ using Raft.Transport;
 using System.Net;
 
 using FileSplitter.Server;
+using System.IO;
 
 namespace FileSplitter.Runner
 {
@@ -11,17 +12,19 @@ namespace FileSplitter.Runner
     {
         static void Main(string[] args)
         {
-            var endpoint = new TcpClusterEndPoint()
+            var server = new RaftServer(File.ReadAllText(@".\config.txt"), @".\Temp\");
+
+
+            while (true)
             {
-                Host = IPAddress.Any.ToString(),
-                Port = 4500
-            };
+                var line = Console.ReadLine();
+                if(line == "q")
+                {
+                    break;
+                }
 
-            var setting = new RaftNodeSettings();
-
-            var server = new RaftServer(endpoint, setting, @".\Temp\");
-
-            Console.ReadLine();
+                server.Send(new byte[] { 29 });
+            }
         }
     }
 }

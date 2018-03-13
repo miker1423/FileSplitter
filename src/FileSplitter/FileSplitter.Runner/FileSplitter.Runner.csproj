@@ -9,4 +9,10 @@
     <ProjectReference Include="..\FileSplitter.Server\FileSplitter.Server.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="config.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

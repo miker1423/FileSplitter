@@ -10,25 +10,19 @@ namespace FileSplitter.Server
 {
     public class RaftServer
     {
-        private List<TcpClusterEndPoint> tcpClusterEndPoints = new List<TcpClusterEndPoint>();
-        private List<RaftNodeSettings> nodeSettings = new List<RaftNodeSettings>();
         private BasicSplitter splitter = new BasicSplitter();
         private TcpRaftNode raftNode;
 
         public RaftServer(
-            TcpClusterEndPoint endpoint,
-            RaftNodeSettings settings,
+            string configPath,
             string path)
         {
-            if(endpoint == null || settings == null || string.IsNullOrEmpty(path))
+            if(string.IsNullOrEmpty(configPath) || string.IsNullOrEmpty(path))
             {
                 throw new ArgumentNullException("One or more parameter is null");
             }
 
-            tcpClusterEndPoints.Add(endpoint);
-            nodeSettings.Add(settings);
-
-            raftNode = new TcpRaftNode(tcpClusterEndPoints, nodeSettings, path, splitter.WriteFile, log: new Logger());
+            raftNode = TcpRaftNode.GetFromConfig(1, configPath, path, 4250, new Logger(), splitter.WriteFile);
 
             raftNode.Start();
         }
@@ -47,7 +41,12 @@ namespace FileSplitter.Server
         }
 
         public AddLogEntryResult Send(byte[] crap)
-            => raftNode?.AddLogEntry(crap);
+        {
+            var result = raftNode?.AddLogEntry(crap);
+            Console.WriteLine(result.AddResult.ToString());
+
+            return result;
+        }
     }
 
     class Logger : IWarningLog
